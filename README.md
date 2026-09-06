@@ -13,6 +13,17 @@
   <a href="#中文">中文</a> · <a href="#english">English</a>
 </p>
 
+<table>
+  <tr>
+    <td><img src="docs/demo-1-intro.png" alt="按 ⌥⌘T 弹出翻译浮窗,回车原地替换 / Press ⌥⌘T, hit Return to replace in place"></td>
+    <td><img src="docs/demo-2-languages.png" alt="约 20 种主流语言,下拉即选 / ~20 languages in a dropdown"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/demo-3-offline.png" alt="本地离线翻译,隐私零上传 / Fully on-device, nothing uploaded"></td>
+    <td><img src="docs/demo-4-clipboard.png" alt="自带剪贴板历史,⌥⌘V 呼出 / Built-in clipboard history via ⌥⌘V"></td>
+  </tr>
+</table>
+
 ---
 
 # 中文
