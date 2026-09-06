@@ -54,6 +54,14 @@ enum TextGrabber {
         let bundleID = app?.bundleIdentifier ?? ""
         var caret: NSRect?
         var storedRange: CFRange?
+        let windowRect = pid.flatMap { focusedWindowRect(pid: $0) }
+
+        // 部分 Electron/Chromium App 返回的 AX 坐标是相对窗口而非全局屏幕的;
+        // 凡是中心点落在焦点窗口范围之外的矩形一律视为不可信
+        func plausible(_ rect: NSRect) -> Bool {
+            guard let win = windowRect else { return true }
+            return NSPointInRect(NSPoint(x: rect.midX, y: rect.midY), win.insetBy(dx: -16, dy: -16))
+        }
 
         if let el = element {
             let role = stringAttribute(el, kAXRoleAttribute) ?? "?"
@@ -61,9 +69,9 @@ enum TextGrabber {
                 return .fail("出于安全考虑,不读取密码输入框")
             }
             storedRange = rangeAttribute(el, kAXSelectedTextRangeAttribute)
-            // 定位链:精确光标 → 小尺寸输入框的下沿
-            let fieldFrame = frameRect(of: el)
-            caret = caretRect(of: el, range: storedRange)
+            // 定位链:精确光标 → 小尺寸输入框的下沿(均需通过窗口范围校验)
+            let fieldFrame = frameRect(of: el).flatMap { plausible($0) ? $0 : nil }
+            caret = caretRect(of: el, range: storedRange).flatMap { plausible($0) ? $0 : nil }
             if let c = caret, let f = fieldFrame,
                abs(c.minX - f.minX) < 4, abs(c.minY - f.minY) < 4, abs(c.height - f.height) < 8 {
                 // 有的 App 把整个元素框当作光标矩形返回,不可信,丢弃
@@ -73,6 +81,7 @@ enum TextGrabber {
                 // 只有"像输入框"的小元素才挂它下沿;窗口级大容器会把面板带到屏幕角落
                 caret = NSRect(x: f.minX + 4, y: f.minY, width: 0, height: f.height)
             }
+            Log.grab.log("anchor: caret=\(caret.map(String.init(describing:)) ?? "nil", privacy: .public) window=\(windowRect.map(String.init(describing:)) ?? "nil", privacy: .public)")
 
             // 选中了 → 只翻译选中部分
             if let selected = stringAttribute(el, kAXSelectedTextAttribute),
@@ -101,7 +110,7 @@ enum TextGrabber {
 
         // 定位链兜底:焦点窗口底部居中(聊天类输入框都在窗口底部,位置贴近打字处
         // 且完全可预期;不跟随鼠标)
-        if caret == nil, let pid, let win = focusedWindowRect(pid: pid) {
+        if caret == nil, let win = windowRect {
             caret = NSRect(x: win.midX - 190, y: min(win.minY + 300, win.midY), width: 0, height: 0)
         }
 
