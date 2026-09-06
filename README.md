@@ -258,4 +258,7 @@ Result: grant once — `make clean`, pulling updates, even Xcode upgrades don't 
 
 ## License / 许可
 
-[MIT](LICENSE) © 2026 ChuDu
+[PolyForm Noncommercial 1.0.0](LICENSE) © 2026 ChuDu
+
+个人、学习、研究等**非商业用途免费**,可自由使用、修改、分发;**任何商业用途均不允许**,商业授权请联系作者。
+Free for **personal and other noncommercial use** — use, modify and share freely. **Commercial use of any kind is not permitted**; contact the author for a commercial license.
