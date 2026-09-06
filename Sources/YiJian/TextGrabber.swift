@@ -61,9 +61,17 @@ enum TextGrabber {
                 return .fail("出于安全考虑,不读取密码输入框")
             }
             storedRange = rangeAttribute(el, kAXSelectedTextRangeAttribute)
-            // 定位链:精确光标 → 输入框下沿
-            caret = caretRect(of: el, range: storedRange) ?? frameRect(of: el).map { field in
-                NSRect(x: field.minX + 4, y: field.minY, width: 0, height: field.height)
+            // 定位链:精确光标 → 小尺寸输入框的下沿
+            let fieldFrame = frameRect(of: el)
+            caret = caretRect(of: el, range: storedRange)
+            if let c = caret, let f = fieldFrame,
+               abs(c.minX - f.minX) < 4, abs(c.minY - f.minY) < 4, abs(c.height - f.height) < 8 {
+                // 有的 App 把整个元素框当作光标矩形返回,不可信,丢弃
+                caret = nil
+            }
+            if caret == nil, let f = fieldFrame, f.height <= 320 {
+                // 只有"像输入框"的小元素才挂它下沿;窗口级大容器会把面板带到屏幕角落
+                caret = NSRect(x: f.minX + 4, y: f.minY, width: 0, height: f.height)
             }
 
             // 选中了 → 只翻译选中部分
@@ -91,16 +99,10 @@ enum TextGrabber {
             Log.grab.info("AX focused element unavailable, falling back to clipboard")
         }
 
-        // 定位链兜底:光标拿不到时,鼠标在当前窗口内就用鼠标位置(用户刚点过输入框,
-        // 鼠标就在文字附近);鼠标在窗口外才退到窗口中部,保证不乱跳
-        if caret == nil {
-            let mouse = NSEvent.mouseLocation
-            let win = pid.flatMap { focusedWindowRect(pid: $0) }
-            if let win, NSPointInRect(mouse, win) {
-                caret = NSRect(x: mouse.x - 20, y: mouse.y - 6, width: 0, height: 0)
-            } else if let win {
-                caret = NSRect(x: win.midX - 190, y: win.midY + 100, width: 0, height: 0)
-            }
+        // 定位链兜底:焦点窗口底部居中(聊天类输入框都在窗口底部,位置贴近打字处
+        // 且完全可预期;不跟随鼠标)
+        if caret == nil, let pid, let win = focusedWindowRect(pid: pid) {
+            caret = NSRect(x: win.midX - 190, y: min(win.minY + 300, win.midY), width: 0, height: 0)
         }
 
         // 剪贴板兜底(微信/Electron 等辅助功能读不到的 App):
