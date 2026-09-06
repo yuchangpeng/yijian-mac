@@ -8,6 +8,8 @@
 	<string>译键</string>
 	<key>CFBundleExecutable</key>
 	<string>YiJian</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
 	<string>dev.chendi.yijian</string>
 	<key>CFBundleInfoDictionaryVersion</key>

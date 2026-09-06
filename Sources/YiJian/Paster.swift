@@ -27,6 +27,16 @@ enum Paster {
         _ = context.app?.activate()
         try? await Task.sleep(nanoseconds: 100_000_000)
 
+        // 选中模式:粘贴前用 AX 重建抓取时的选区——部分 App 在浮窗获得键盘焦点时
+        // 会把选区塌缩到末尾,导致 ⌘V 变成"追加"而不是"替换"
+        if context.mode == .selection, let el = context.axElement, var range = context.selectedRange {
+            if let value = AXValueCreate(.cfRange, &range) {
+                let err = AXUIElementSetAttributeValue(el, kAXSelectedTextRangeAttribute as CFString, value)
+                Log.paste.info("re-select before paste: err=\(err.rawValue)")
+                try? await Task.sleep(nanoseconds: 60_000_000)
+            }
+        }
+
         let saved = Pasteboard.snapshot()
         let ourChange = Pasteboard.setTransientString(translation)
 
