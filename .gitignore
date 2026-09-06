@@ -1,0 +1,6 @@
+.build/
+dist/
+.DS_Store
+.swiftpm/
+# 本机生成的定版启动器(权限锚点),每台机器自己的,不入库
+Support/YiJianLauncher
