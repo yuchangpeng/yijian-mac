@@ -82,7 +82,7 @@ struct GeneralSettingsView: View {
                     }
             }
             Section {
-                LabeledContent("版本", value: "0.1.0")
+                LabeledContent("版本", value: "1.0.0")
             } footer: {
                 Text("在任何输入框输完文字,按 ⌥⌘T 预览译文,回车替换。翻译全程本地完成,不联网。")
                     .font(.caption)
